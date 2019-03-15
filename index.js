@@ -25,12 +25,12 @@ const Defaults = {
 }
 
 class BotiumConnectorDirectline3 {
-  constructor ({ queueBotSays, caps }) {
+  constructor({ queueBotSays, caps }) {
     this.queueBotSays = queueBotSays
     this.caps = caps
   }
 
-  Validate () {
+  Validate() {
     debug('Validate called')
     this.caps = Object.assign({}, Defaults, this.caps)
 
@@ -41,12 +41,12 @@ class BotiumConnectorDirectline3 {
     return Promise.resolve()
   }
 
-  Build () {
+  Build() {
     debug('Build called')
     return Promise.resolve()
   }
 
-  Start () {
+  Start() {
     debug('Start called')
     this._stopSubscription()
     this.directLine = new DirectLine({
@@ -189,7 +189,7 @@ class BotiumConnectorDirectline3 {
     return Promise.resolve()
   }
 
-  UserSays (msg) {
+  UserSays(msg) {
     debug('UserSays called')
     return new Promise((resolve, reject) => {
       const activity = {
@@ -200,9 +200,18 @@ class BotiumConnectorDirectline3 {
         try {
           payload = JSON.parse(payload)
         } catch (err) {
+          console.log(`Parsing error: ${err}`)
         }
         activity.type = this.caps[Capabilities.DIRECTLINE3_BUTTON_TYPE]
         activity[this.caps[Capabilities.DIRECTLINE3_BUTTON_VALUE_FIELD]] = payload
+      } else if (msg.messageText.includes('JSON')) {
+        activity.type = 'message'
+        let jsonStr = msg.messageText.split('::')[1]
+        try {
+          activity.value = JSON.parse(jsonStr)
+        } catch (err) {
+          console.log(`Parsing error of json input: ${err}`)
+        }
       } else {
         activity.type = 'message'
         activity.text = msg.messageText
@@ -225,19 +234,19 @@ class BotiumConnectorDirectline3 {
     })
   }
 
-  Stop () {
+  Stop() {
     debug('Stop called')
     this._stopSubscription()
     return Promise.resolve()
   }
 
-  Clean () {
+  Clean() {
     debug('Clean called')
     this._stopSubscription()
     return Promise.resolve()
   }
 
-  _stopSubscription () {
+  _stopSubscription() {
     if (this.subscription) {
       debug('unsubscribing from directline activity subscription')
       this.subscription.unsubscribe()
@@ -250,7 +259,7 @@ class BotiumConnectorDirectline3 {
     }
   }
 
-  _deepFilter (item, selectFn, filterFn) {
+  _deepFilter(item, selectFn, filterFn) {
     let result = []
     if (_.isArray(item)) {
       item.filter(selectFn).forEach(subItem => {
